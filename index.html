@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Shaikh Traders - Tea POS</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #fff8dc; }
+  h1 { text-align: center; color: #8b4513; }
+  .logo { display: block; margin: 0 auto 10px; max-width: 150px; }
+  .container { display: flex; flex-wrap: wrap; gap: 20px; }
+  .products, .cart, .stock-panel { background: white; padding: 15px; border-radius: 8px; flex: 1; min-width: 300px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  .product { padding: 10px; border: 1px solid #deb887; border-radius: 6px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; }
+  .product:hover { background: #fffacd; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { padding: 8px; border-bottom: 1px solid #deb887; text-align: left; }
+  .btn { background: #daa520; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+  .btn:hover { background: #b8860b; }
+  .stock { font-size: 12px; color: #555; }
+  select, input { padding: 5px; margin-top: 5px; width: 100%; border: 1px solid #deb887; border-radius: 4px; }
+  .price-list { background:#fffacd; padding:10px; border:1px solid #deb887; border-radius:6px; margin-bottom:15px; text-align:center; }
+  .price-list p { margin:5px 0; }
+</style>
+</head>
+<body>
+
+<!-- Logo -->
+<img src="Shaikh Traders Logo.png" alt="Shaikh Traders Tea Logo" class="logo">
+<h1>Shaikh Traders - Tea POS</h1>
+
+<!-- Price List -->
+<div class="price-list">
+  <h3 style="margin:0; color:#8b4513;">Price List</h3>
+  <p>TABAL PATI 50  = Rs 900</p>
+  <p>TABAL PATI 100 = Rs 1800</p>
+  <p>TABAL PATI 150 = Rs 2700</p>
+  <p>TABAL PATI 200 = Rs 3600</p>
+  <p>TABAL PATI 250 = Rs 4500</p>
+</div>
+
+<div class="container">
+  <!-- Product List -->
+  <div class="products">
+    <h2>Menu</h2>
+    <div class="product" onclick="addToCart('Tabal Pati 50', 900)">
+      <span>Tabal Pati 50 - Rs 900</span>
+      <span class="stock" id="stock-Tabal Pati 50"></span>
+    </div>
+    <div class="product" onclick="addToCart('Tabal Pati 100', 1800)">
+      <span>Tabal Pati 100 - Rs 1800</span>
+      <span class="stock" id="stock-Tabal Pati 100"></span>
+    </div>
+    <div class="product" onclick="addToCart('Tabal Pati 150', 2700)">
+      <span>Tabal Pati 150 - Rs 2700</span>
+      <span class="stock" id="stock-Tabal Pati 150"></span>
+    </div>
+    <div class="product" onclick="addToCart('Tabal Pati 200', 3600)">
+      <span>Tabal Pati 200 - Rs 3600</span>
+      <span class="stock" id="stock-Tabal Pati 200"></span>
+    </div>
+    <div class="product" onclick="addToCart('Tabal Pati 250', 4500)">
+      <span>Tabal Pati 250 - Rs 4500</span>
+      <span class="stock" id="stock-Tabal Pati 250"></span>
+    </div>
+  </div>
+
+  <!-- Cart -->
+  <div class="cart">
+    <h2>Cart</h2>
+    <table id="cartTable">
+      <thead>
+        <tr><th>Item</th><th>Qty</th><th>Price</th><th>Remove</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <h3>Total: Rs <span id="total">0</span></h3>
+    <button class="btn" onclick="printInvoice()">Print Invoice</button>
+    <button class="btn" onclick="saveInvoice()">Save Invoice</button>
+    <button class="btn" onclick="clearCart()">Clear Cart</button>
+  </div>
+
+  <!-- Stock Panel -->
+  <div class="stock-panel">
+    <h2>Add Stock</h2>
+    <label for="productSelect">Select Product:</label>
+    <select id="productSelect">
+      <option value="Tabal Pati 50">Tabal Pati 50</option>
+      <option value="Tabal Pati 100">Tabal Pati 100</option>
+      <option value="Tabal Pati 150">Tabal Pati 150</option>
+      <option value="Tabal Pati 200">Tabal Pati 200</option>
+      <option value="Tabal Pati 250">Tabal Pati 250</option>
+    </select>
+    <label for="stockAmount">Add Quantity:</label>
+    <input type="number" id="stockAmount" placeholder="Enter quantity">
+    <button class="btn" onclick="addStock()">Update Stock</button>
+  </div>
+</div>
+
+<script>
+  let cart = [];
+  let stock = {
+    "Tabal Pati 50": 50,
+    "Tabal Pati 100": 50,
+    "Tabal Pati 150": 50,
+    "Tabal Pati 200": 50,
+    "Tabal Pati 250": 50
+  };
+
+  function updateStockDisplay() {
+    for (let item in stock) {
+      document.getElementById("stock-" + item).innerText = `(Stock: ${stock[item]})`;
+    }
+  }
+
+  function addToCart(name, price) {
+    if (stock[name] > 0) {
+      let item = cart.find(i => i.name === name);
+      if (item) {
+        item.qty++;
+      } else {
+        cart.push({ name, price, qty: 1 });
+      }
+      stock[name]--;
+      renderCart();
+      updateStockDisplay();
+    } else {
+      alert(name + " is out of stock!");
+    }
+  }
+
+  function removeItem(index) {
+    let removedItem = cart[index];
+    stock[removedItem.name] += removedItem.qty;
+    cart.splice(index, 1);
+    renderCart();
+    updateStockDisplay();
+  }
+
+  function renderCart() {
+    let tbody = document.querySelector("#cartTable tbody");
+    tbody.innerHTML = "";
+    let total = 0;
+    cart.forEach((item, index) => {
+      let row = `<tr>
+        <td>${item.name}</td>
+        <td>${item.qty}</td>
+        <td>Rs ${(item.price * item.qty).toFixed(2)}</td>
+        <td><button onclick="removeItem(${index})">X</button></td>
+      </tr>`;
+      tbody.innerHTML += row;
+      total += item.price * item.qty;
+    });
+    document.getElementById("total").innerText = total.toFixed(2);
+  }
+
+  function clearCart() {
+    cart.forEach(item => {
+      stock[item.name] += item.qty;
+    });
+    cart = [];
+    renderCart();
+    updateStockDisplay();
+  }
+
+  function printInvoice() {
+    if (cart.length === 0) { alert("Cart is empty!"); return; }
+
+    let currentDate = new Date();
+    let dateTime = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+
+    let win = window.open("", "_blank");
+    let html = `
+      <div style="text-align:center">
+        <img src="Shaikh Traders Logo.png" style="max-width:100px;">
+        <h2>Shaikh Traders - Invoice</h2>
+        <p><strong>Date & Time:</strong> ${dateTime}</p>
+      </div>
+      <h4>Price List</h4>
+      <ul>
+        <li>TABAL PATI 50 = Rs 900</li>
+        <li>TABAL PATI 100 = Rs 1800</li>
+        <li>TABAL PATI 150 = Rs 2700</li>
+        <li>TABAL PATI 200 = Rs 3600</li>
+        <li>TABAL PATI 250 = Rs 4500</li>
+      </ul>
+      <table border="1" cellspacing="0" cellpadding="5" style="width:100%;border-collapse:collapse;text-align:left;">
+        <tr><th>Item</th><th>Qty</th><th>Price</th></tr>`;
+    let total = 0;
+    cart.forEach(item => {
+      html += `<tr><td>${item.name}</td><td>${item.qty}</td><td>Rs ${(item.price * item.qty).toFixed(2)}</td></tr>`;
+      total += item.price * item.qty;
+    });
+    html += `</table><h3>Total: Rs ${total.toFixed(2)}</h3>`;
+    win.document.write(html);
+    win.print();
+  }
+
+  function saveInvoice() {
+    if (cart.length === 0) { alert("Cart is empty!"); return; }
+    let currentDate = new Date();
+    let dateTime = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+
+    let text = "Shaikh Traders - Tea Invoice\n" + "Date & Time: " + dateTime + "\n\n";
+    text += "Price List:\n";
+    text += "TABAL PATI 50 = Rs 900\n";
+    text += "TABAL PATI 100 = Rs 1800\n";
+    text += "TABAL PATI 150 = Rs 2700\n";
+    text += "TABAL PATI 200 = Rs 3600\n";
+    text += "TABAL PATI 250 = Rs 4500\n\n";
+    
+    let total = 0;
+    cart.forEach(item => {
+      text += `${item.name} x ${item.qty} = Rs ${(item.price * item.qty).toFixed(2)}\n`;
+      total += item.price * item.qty;
+    });
+    text += `\nTotal: Rs ${total.toFixed(2)}`;
+    let blob = new Blob([text], { type: "text/plain" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "invoice.txt";
+    link.click();
+  }
+
+  function addStock() {
+    let product = document.getElementById("productSelect").value;
+    let amount = parseInt(document.getElementById("stockAmount").value);
+    if (!isNaN(amount) && amount > 0) {
+      stock[product] += amount;
+      updateStockDisplay();
+      alert(`${amount} added to ${product}. New stock: ${stock[product]}`);
+      document.getElementById("stockAmount").value = "";
+    } else {
+      alert("Enter a valid quantity.");
+    }
+  }
+
+  updateStockDisplay();
+</script>
+
+</body>
+</html>
